@@ -16,6 +16,26 @@ namespace QuanlyDL.Forms
             InitializeComponent();
             dtpNgayNhan.Value = DateTime.Today;
             dtpNgayHoanThanh.Value = DateTime.Today.AddDays(7);
+
+            // Cho phép Form bắt sự kiện phím trước khi chuyển tới control đang focus
+            KeyPreview = true;
+            KeyDown += FormNhapVanBan_KeyDown;
+        }
+
+        /// <summary>
+        /// Nhấn Enter sẽ nhảy sang ô kế tiếp (giống Tab), trừ:
+        /// - Ô Nội dung (multiline): Enter dùng để xuống dòng như bình thường
+        /// - Đang focus vào Button: Enter dùng để bấm nút đó (hành vi mặc định)
+        /// </summary>
+        private void FormNhapVanBan_KeyDown(object? sender, KeyEventArgs e)
+        {
+            if (e.KeyCode != Keys.Enter) return;
+            if (ActiveControl is Button) return;
+            if (ActiveControl == txtNoiDung) return; // cho phép xuống dòng
+
+            e.Handled = true;
+            e.SuppressKeyPress = true; // chặn tiếng "beep"
+            SelectNextControl(ActiveControl, true, true, true, true);
         }
 
         /// <summary>
@@ -47,43 +67,35 @@ namespace QuanlyDL.Forms
                 chkCoHan.Checked = false;
             }
 
-            // Nếu có độ mật, cố gắng giải mã nếu khoá đã mở; nếu chưa mở, hiển thị trống
+            // Văn bản có độ mật: FormTraCuu đã bắt xác thực trước khi mở form này.
+            // Nếu vì lý do nào đó khoá vẫn chưa mở -> chặn hẳn, không cho sửa
+            // (giống hành vi chặn của chức năng Xóa).
             if (vb.CoDoMat)
             {
-                if (VaultSession.Khoa != null)
+                if (VaultSession.Khoa == null)
                 {
-                    try
-                    {
-                        txtChuyen.Text = CryptoHelper.GiaiMaChuoi(VaultSession.Khoa, vb.Chuyen);
-                        txtSoKyHieu.Text = CryptoHelper.GiaiMaChuoi(VaultSession.Khoa, vb.SoKyHieuHS);
-                        txtNoiDung.Text = CryptoHelper.GiaiMaChuoi(VaultSession.Khoa, vb.NoiDung);
-                        txtCanBo.Text = CryptoHelper.GiaiMaChuoi(VaultSession.Khoa, vb.CanBoTiepNhan);
-                    }
-                    catch
-                    {
-                        // nếu giải mã thất bại, để trống (người dùng nên mở khoá trước khi sửa)
-                        txtChuyen.Text = "";
-                        txtSoKyHieu.Text = "";
-                        txtNoiDung.Text = "";
-                        txtCanBo.Text = "";
-                    }
+                    MessageBox.Show("Cần xác thực mật khẩu trước khi sửa văn bản có độ mật.",
+                        "Chưa xác thực", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    DialogResult = DialogResult.Cancel;
+                    Close();
+                    return;
                 }
-                else
+
+                try
                 {
-                    // Không mở khoá -> cảnh báo nhẹ
-                    MessageBox.Show("Văn bản này có độ mật. Nếu muốn sửa nội dung được mã hoá, hãy mở khoá (xác thực) trước khi sửa.", "Lưu ý", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    txtChuyen.Text = "";
-                    txtSoKyHieu.Text = "";
-                    txtNoiDung.Text = "";
-                    txtCanBo.Text = "";
+                    txtChuyen.Text = CryptoHelper.GiaiMaChuoi(VaultSession.Khoa, vb.Chuyen);
+                    txtSoKyHieu.Text = CryptoHelper.GiaiMaChuoi(VaultSession.Khoa, vb.SoKyHieuHS);
+                    txtNoiDung.Text = CryptoHelper.GiaiMaChuoi(VaultSession.Khoa, vb.NoiDung);
+                    txtCanBo.Text = CryptoHelper.GiaiMaChuoi(VaultSession.Khoa, vb.CanBoTiepNhan);
                 }
-            }
-            else
-            {
-                txtChuyen.Text = vb.Chuyen ?? "";
-                txtSoKyHieu.Text = vb.SoKyHieuHS ?? "";
-                txtNoiDung.Text = vb.NoiDung ?? "";
-                txtCanBo.Text = vb.CanBoTiepNhan ?? "";
+                catch
+                {
+                    MessageBox.Show("Không thể giải mã dữ liệu (mật khẩu không đúng hoặc dữ liệu lỗi). Không thể sửa văn bản này.",
+                        "Lỗi giải mã", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    DialogResult = DialogResult.Cancel;
+                    Close();
+                    return;
+                }
             }
 
             // Tệp đính kèm cũ (chỉ hiển thị tên gốc)

@@ -294,5 +294,29 @@ namespace QuanlyDL.Data
             int i = reader.GetOrdinal(tenCot);
             return reader.IsDBNull(i) ? null : reader.GetString(i);
         }
+        /// <summary>
+        /// Đếm số văn bản theo từng mức Độ mật (Không / Mật / Tuyệt Mật / Tối Mật).
+        /// </summary>
+        public static Dictionary<string, int> DemTheoTungDoMat()
+        {
+            var ketQua = new Dictionary<string, int>
+            {
+                [DoMat.Khong] = 0,
+                [DoMat.Mat] = 0,
+                [DoMat.TuyetMat] = 0,
+                [DoMat.ToiMat] = 0,
+            };
+
+            using var conn = new SqliteConnection(ChuoiKetNoi);
+            conn.Open();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "SELECT MucDoMat, COUNT(*) FROM VanBan GROUP BY MucDoMat";
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                ketQua[reader.GetString(0)] = reader.GetInt32(1);
+            }
+            return ketQua;
+        }
     }
 }

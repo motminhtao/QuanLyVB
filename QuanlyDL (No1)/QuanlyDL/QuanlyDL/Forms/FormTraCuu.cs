@@ -1,5 +1,6 @@
 using QuanlyDL.Data;
 using QuanlyDL.Models;
+using QuanlyDL.Security;
 
 namespace QuanlyDL.Forms
 {
@@ -30,8 +31,9 @@ namespace QuanlyDL.Forms
 
         private void NapDuLieu(List<VanBan> danhSach)
         {
-            grid.DataSource = danhSach.Select(v => new
+            grid.DataSource = danhSach.Select((v, idx) => new
             {
+                STT = idx + 1,
                 v.Id,
                 TenVanBan = v.TenVanBan,
                 SoDen = v.SoDen,
@@ -45,6 +47,7 @@ namespace QuanlyDL.Forms
             if (grid.Columns["Id"] != null)
                 grid.Columns["Id"]!.Visible = false;
 
+            RenameCotNeuTonTai("STT", "STT");
             RenameCotNeuTonTai("TenVanBan", "Tên văn bản");
             RenameCotNeuTonTai("SoDen", "Số đến");
             RenameCotNeuTonTai("NgayNhan", "Ngày nhận");
@@ -52,6 +55,10 @@ namespace QuanlyDL.Forms
             RenameCotNeuTonTai("NgayHoanThanh", "Ngày hoàn thành");
             RenameCotNeuTonTai("TrangThai", "Trạng thái");
             RenameCotNeuTonTai("TepDinhKem", "Tệp đính kèm");
+
+            if (grid.Columns["STT"] != null) grid.Columns["STT"]!.Width = 50;
+
+            CapNhatSoLuongMat();
 
             // Nếu có ít nhất 1 hàng, chọn hàng đầu tiên để bật nút Sửa/Xóa
             if (grid.Rows.Count > 0)
@@ -126,6 +133,20 @@ namespace QuanlyDL.Forms
             if (row.Cells["Id"]?.Value == null) return;
 
             long id = Convert.ToInt64(row.Cells["Id"]!.Value);
+            var vb = DbHelper.LayTheoId(id);
+            if (vb == null) return;
+
+            // Văn bản có độ mật -> bắt buộc xác thực mật khẩu trước khi cho sửa
+            if (vb.CoDoMat)
+            {
+                if (!VaultHelper.DamBaoDaMoKhoa(this))
+                {
+                    MessageBox.Show("Cần xác thực mật khẩu để sửa văn bản có độ mật.", "Chưa xác thực",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+            }
+
             using var form = new FormNhapVanBan(id);
             if (form.ShowDialog(this) == DialogResult.OK)
             {
@@ -140,8 +161,25 @@ namespace QuanlyDL.Forms
             if (row.Cells["Id"]?.Value == null) return;
 
             long id = Convert.ToInt64(row.Cells["Id"]!.Value);
-            var confirm = MessageBox.Show("Bạn có chắc muốn xóa văn bản này? Hành động này không thể hoàn tác.", "Xác nhận xóa",
-                MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            var vb = DbHelper.LayTheoId(id);
+            if (vb == null) return;
+
+            // Văn bản có độ mật -> bắt buộc xác thực mật khẩu trước khi cho xóa
+            if (vb.CoDoMat)
+            {
+                if (!VaultHelper.DamBaoDaMoKhoa(this))
+                {
+                    MessageBox.Show("Cần xác thực mật khẩu để xóa văn bản có độ mật.", "Chưa xác thực",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+            }
+
+            var confirm = MessageBox.Show(
+                vb.CoDoMat
+                    ? $"Văn bản \"{vb.TenVanBan}\" thuộc Vùng lưu trữ CÓ KHÓA (Độ mật: {vb.MucDoMat}).\nBạn có chắc muốn xóa? Không thể hoàn tác."
+                    : "Bạn có chắc muốn xóa văn bản này? Hành động này không thể hoàn tác.",
+                "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
             if (confirm != DialogResult.Yes) return;
 
             DbHelper.XoaVanBan(id);
@@ -154,5 +192,29 @@ namespace QuanlyDL.Forms
         {
             dtpTimNgay.Enabled = chkLocNgay.Checked;
         }
+        private void BtnLoc_Click(object sender, EventArgs e)
+        {
+            string? locDoMat = cboLocDoMat.SelectedIndex <= 0 ? null : cboLocDoMat.SelectedItem!.ToString();
+            var ketQua = DbHelper.LayTatCa();
+            if (!string.IsNullOrEmpty(locDoMat))
+                ketQua = ketQua.Where(v => v.MucDoMat == locDoMat).ToList();
+            NapDuLieu(ketQua);
+        }
+
+        private void CapNhatSoLuongMat()
+        {
+            var dem = DbHelper.DemTheoTungDoMat();
+            int soMat = dem[DoMat.Mat];
+            int soToiMat = dem[DoMat.ToiMat];
+            int soTuyetMat = dem[DoMat.TuyetMat];
+            int soKhong = dem[DoMat.Khong];
+            int tongKhoa = soMat + soToiMat + soTuyetMat;
+
+            lblDemMat.Text = $"Mật: {soMat}";
+            lblDemToiMat.Text = $"Tối Mật: {soToiMat}";
+            lblDemTuyetMat.Text = $"Tuyệt Mật: {soTuyetMat}";
+            lblTongKhoaThuong.Text = $"🔒 Đang khóa: {tongKhoa}   |   📄 Thường: {soKhong}";
+        }
     }
+
 }
