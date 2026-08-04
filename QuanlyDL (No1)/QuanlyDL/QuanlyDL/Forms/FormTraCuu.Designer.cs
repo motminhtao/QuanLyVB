@@ -217,7 +217,7 @@ namespace QuanlyDL.Forms
             // 
             btnXoa.BackColor = Color.IndianRed;
             btnXoa.Enabled = false;
-            btnXoa.ForeColor = Color.Snow;
+            btnXoa.ForeColor = Color.White;
             btnXoa.Location = new Point(800, 109);
             btnXoa.Margin = new Padding(3, 4, 3, 4);
             btnXoa.Name = "btnXoa";

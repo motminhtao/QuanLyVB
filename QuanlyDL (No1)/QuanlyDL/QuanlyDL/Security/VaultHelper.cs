@@ -1,3 +1,4 @@
+using System.IO;
 using QuanlyDL.Data;
 using QuanlyDL.Forms;
 
@@ -83,6 +84,77 @@ namespace QuanlyDL.Security
             }
 
             return false;
+        }
+        /// <summary>
+        /// Đổi mật khẩu vùng có khóa: xác thực mật khẩu cũ, sau đó mã hóa lại
+        /// toàn bộ văn bản/tệp đính kèm có độ mật bằng mật khẩu mới.
+        /// </summary>
+        public static bool DoiMatKhau(IWin32Window? owner)
+        {
+            string? saltB64 = DbHelper.LayCaiDat(KhoaCaiDatSalt);
+            string? canaryB64 = DbHelper.LayCaiDat(KhoaCaiDatCanary);
+
+            if (string.IsNullOrEmpty(saltB64) || string.IsNullOrEmpty(canaryB64))
+            {
+                MessageBox.Show("Chưa thiết lập mật khẩu vùng có khóa. Hãy lưu 1 văn bản có độ mật trước để thiết lập mật khẩu.",
+                    "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return false;
+            }
+
+            using var form = new FormDoiMatKhauVault();
+            if (form.ShowDialog(owner) != DialogResult.OK) return false;
+
+            byte[] saltCu = Convert.FromBase64String(saltB64);
+            byte[] khoaCu = CryptoHelper.SuyRaKhoa(form.MatKhauHienTai, saltCu);
+
+            try
+            {
+                string giaiMaThu = CryptoHelper.GiaiMaChuoi(khoaCu, canaryB64);
+                if (giaiMaThu != ChuoiKiemTra) throw new Exception();
+            }
+            catch
+            {
+                MessageBox.Show("Mật khẩu hiện tại không đúng.", "Lỗi",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+
+            byte[] saltMoi = CryptoHelper.TaoSaltMoi();
+            byte[] khoaMoi = CryptoHelper.SuyRaKhoa(form.MatKhauMoi, saltMoi);
+
+            var dsCoDoMat = DbHelper.LayTatCa().Where(v => v.CoDoMat).ToList();
+            foreach (var vb in dsCoDoMat)
+            {
+                vb.Chuyen = MaHoaLai(khoaCu, khoaMoi, vb.Chuyen);
+                vb.SoKyHieuHS = MaHoaLai(khoaCu, khoaMoi, vb.SoKyHieuHS);
+                vb.NoiDung = MaHoaLai(khoaCu, khoaMoi, vb.NoiDung);
+                vb.CanBoTiepNhan = MaHoaLai(khoaCu, khoaMoi, vb.CanBoTiepNhan);
+                DbHelper.CapNhatVanBan(vb);
+
+                if (vb.CoTepDinhKem && vb.DuongDanTepDayDu != null && File.Exists(vb.DuongDanTepDayDu))
+                {
+                    byte[] noiDungGoc = CryptoHelper.GiaiMaTep(khoaCu, vb.DuongDanTepDayDu);
+                    byte[] maMoi = CryptoHelper.MaHoa(khoaMoi, noiDungGoc);
+                    File.WriteAllBytes(vb.DuongDanTepDayDu, maMoi);
+                }
+            }
+
+            string canaryMoi = CryptoHelper.MaHoaChuoi(khoaMoi, ChuoiKiemTra);
+            DbHelper.LuuCaiDat(KhoaCaiDatSalt, Convert.ToBase64String(saltMoi));
+            DbHelper.LuuCaiDat(KhoaCaiDatCanary, canaryMoi);
+
+            VaultSession.MoKhoa(khoaMoi);
+
+            MessageBox.Show("Đã đổi mật khẩu thành công. Toàn bộ dữ liệu có độ mật đã được mã hóa lại.",
+                "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return true;
+        }
+
+        private static string? MaHoaLai(byte[] khoaCu, byte[] khoaMoi, string? chuoiMaCu)
+        {
+            if (string.IsNullOrEmpty(chuoiMaCu)) return chuoiMaCu;
+            string banRo = CryptoHelper.GiaiMaChuoi(khoaCu, chuoiMaCu);
+            return CryptoHelper.MaHoaChuoi(khoaMoi, banRo);
         }
     }
 }

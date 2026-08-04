@@ -12,55 +12,73 @@ namespace QuanlyDL.Forms
 
         private void FormMain_Load(object? sender, EventArgs e)
         {
-            KiemTraThongBaoHan();
+            NapLaiThongBao();
         }
 
         /// <summary>
-        /// Kiểm tra các văn bản có [Ngày Hoàn Thành] trong vòng X ngày tới
-        /// (X do người dùng cấu hình ở mục Cài đặt, mặc định 2 ngày; kể cả
-        /// đã quá hạn) mà chưa hoàn thành, hiển thị thông báo nhắc nhở.
+        /// Nạp lại danh sách văn bản sắp đến hạn / đã quá hạn vào bảng
+        /// thông báo lớn trên giao diện chính.
         /// </summary>
-        private void KiemTraThongBaoHan()
+        private void NapLaiThongBao()
         {
+            lvThongBao.Items.Clear();
+
             int soNgayBaoTruoc = DbHelper.LaySoNgayBaoTruocHan();
             var danhSach = DbHelper.LayDanhSachSapDenHan(soNgayBaoTruoc);
-            if (danhSach.Count == 0) return;
 
-            var noiDung = new System.Text.StringBuilder();
-            noiDung.AppendLine($"Các văn bản sắp đến hạn / đã quá hạn hoàn thành (báo trước {soNgayBaoTruoc} ngày):");
-            noiDung.AppendLine();
+            if (danhSach.Count == 0)
+            {
+                var itemTrong = new ListViewItem(new[] { "(Không có văn bản nào sắp hoặc quá hạn)", "", "", "" });
+                itemTrong.ForeColor = Color.Gray;
+                lvThongBao.Items.Add(itemTrong);
+                return;
+            }
 
+            var homNay = DateTime.Today;
             foreach (var vb in danhSach)
             {
-                var homNay = DateTime.Today;
                 int soNgay = (vb.NgayHoanThanh!.Value.Date - homNay).Days;
                 string trangThai = soNgay < 0 ? $"ĐÃ QUÁ HẠN {-soNgay} ngày"
                                   : soNgay == 0 ? "HẠN HÔM NAY"
-                                  : $"còn {soNgay} ngày";
+                                  : $"Còn {soNgay} ngày";
 
-                noiDung.AppendLine($"• {vb.TenVanBan} (Số đến: {vb.SoDen}) - Hạn: {vb.NgayHoanThanh.Value:dd/MM/yyyy} ({trangThai})");
+                var item = new ListViewItem(new[]
+                {
+                    vb.TenVanBan,
+                    vb.SoDen,
+                    vb.NgayHoanThanh.Value.ToString("dd/MM/yyyy"),
+                    trangThai
+                });
+
+                item.ForeColor = soNgay < 0 ? Color.Red : (soNgay == 0 ? Color.DarkOrange : Color.Black);
+                lvThongBao.Items.Add(item);
             }
-
-            MessageBox.Show(noiDung.ToString(), "Nhắc hạn xử lý văn bản",
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void BtnNhapVanBan_Click(object? sender, EventArgs e)
         {
             using var form = new FormNhapVanBan();
             form.ShowDialog(this);
+            NapLaiThongBao();
         }
 
         private void BtnTraCuu_Click(object? sender, EventArgs e)
         {
             using var form = new FormTraCuu();
             form.ShowDialog(this);
+            NapLaiThongBao();
         }
 
         private void BtnCaiDat_Click(object? sender, EventArgs e)
         {
             using var form = new FormCaiDat();
             form.ShowDialog(this);
+            NapLaiThongBao();
+        }
+
+        private void BtnThoat_Click(object? sender, EventArgs e)
+        {
+            Close();
         }
     }
 }

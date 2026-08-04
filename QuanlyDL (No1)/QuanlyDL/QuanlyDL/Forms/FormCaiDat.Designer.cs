@@ -7,6 +7,8 @@ namespace QuanlyDL.Forms
         private Label lblGhiChu = null!;
         private Label lblSoNgay = null!;
         private NumericUpDown nudSoNgay = null!;
+        private CheckBox chkKhoiDongCungWindows = null!;
+        private Button btnDoiMatKhau = null!;
         private Button btnLuu = null!;
         private Button btnHuy = null!;
 
@@ -22,6 +24,8 @@ namespace QuanlyDL.Forms
             lblGhiChu = new Label();
             lblSoNgay = new Label();
             nudSoNgay = new NumericUpDown();
+            chkKhoiDongCungWindows = new CheckBox();
+            btnDoiMatKhau = new Button();
             btnLuu = new Button();
             btnHuy = new Button();
             ((System.ComponentModel.ISupportInitialize)nudSoNgay).BeginInit();
@@ -49,9 +53,18 @@ namespace QuanlyDL.Forms
             nudSoNgay.Maximum = 90;
             nudSoNgay.Value = 2;
 
+            chkKhoiDongCungWindows.AutoSize = true;
+            chkKhoiDongCungWindows.Location = new Point(20, 140);
+            chkKhoiDongCungWindows.Text = "Khởi động cùng Windows";
+
+            btnDoiMatKhau.Text = "Đổi mật khẩu vùng có khóa...";
+            btnDoiMatKhau.Location = new Point(20, 175);
+            btnDoiMatKhau.Size = new Size(230, 32);
+            btnDoiMatKhau.Click += BtnDoiMatKhau_Click;
+
             btnLuu.Text = "Lưu";
             btnLuu.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
-            btnLuu.Location = new Point(180, 145);
+            btnLuu.Location = new Point(180, 225);
             btnLuu.Size = new Size(90, 34);
             btnLuu.BackColor = Color.FromArgb(0, 120, 215);
             btnLuu.ForeColor = Color.White;
@@ -59,17 +72,19 @@ namespace QuanlyDL.Forms
             btnLuu.Click += BtnLuu_Click;
 
             btnHuy.Text = "Hủy";
-            btnHuy.Location = new Point(280, 145);
+            btnHuy.Location = new Point(280, 225);
             btnHuy.Size = new Size(90, 34);
             btnHuy.DialogResult = DialogResult.Cancel;
 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(400, 200);
+            ClientSize = new Size(400, 280);
             Controls.Add(lblTieuDe);
             Controls.Add(lblGhiChu);
             Controls.Add(lblSoNgay);
             Controls.Add(nudSoNgay);
+            Controls.Add(chkKhoiDongCungWindows);
+            Controls.Add(btnDoiMatKhau);
             Controls.Add(btnLuu);
             Controls.Add(btnHuy);
             FormBorderStyle = FormBorderStyle.FixedDialog;

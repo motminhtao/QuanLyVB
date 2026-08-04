@@ -96,26 +96,26 @@ namespace QuanlyDL.Forms
                 layout.Controls.Add(ctrl, 1, row);
             }
 
-            ThemHang(lblTen, txtTen, "1. Tên văn bản (*):", 0);
+            ThemHang(lblTen, txtTen, "1. Số công văn (*):", 0);
             ThemHang(lblSoDen, txtSoDen, "2. Số đến (*):", 1);
 
             dtpNgayNhan.Format = DateTimePickerFormat.Short;
             ThemHang(lblNgayNhan, dtpNgayNhan, "3. Ngày nhận (*):", 2);
 
             ThemHang(lblChuyen, txtChuyen, "4. Chuyển:", 3);
-            ThemHang(lblSoKyHieu, txtSoKyHieu, "5. Số và ký hiệu HS:", 4);
+            ThemHang(lblSoKyHieu, txtSoKyHieu, "5. lưu hồ sơ:", 4);
 
             txtNoiDung.Multiline = true;
             txtNoiDung.ScrollBars = ScrollBars.Vertical;
             lblNoiDung.Anchor = AnchorStyles.Left | AnchorStyles.Top;
             lblNoiDung.Margin = new Padding(3, 8, 3, 3);
             lblNoiDung.AutoSize = true;
-            lblNoiDung.Text = "6. Nội dung:";
+            lblNoiDung.Text = "6. Trích yếu:";
             txtNoiDung.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top | AnchorStyles.Bottom;
             layout.Controls.Add(lblNoiDung, 0, 5);
             layout.Controls.Add(txtNoiDung, 1, 5);
 
-            ThemHang(lblCanBo, txtCanBo, "7. Cán bộ tiếp nhận:", 6);
+            ThemHang(lblCanBo, txtCanBo, "7. Cán bộ sử lý:", 6);
 
             cboDoMat.DropDownStyle = ComboBoxStyle.DropDownList;
             cboDoMat.Items.AddRange(Models.DoMat.TatCa);
