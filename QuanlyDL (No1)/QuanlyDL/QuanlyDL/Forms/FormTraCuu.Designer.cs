@@ -4,13 +4,13 @@ namespace QuanlyDL.Forms
     {
         private System.ComponentModel.IContainer components = null!;
 
-        private Label lblTieuDe = null!;
         private ComboBox cboLocDoMat = null!;
         private Button btnLoc = null!;
         private Label lblDemMat = null!;
         private Label lblDemToiMat = null!;
         private Label lblDemTuyetMat = null!;
         private Label lblTongKhoaThuong = null!;
+
         private Label lblTen = null!;
         private TextBox txtTimTen = null!;
         private Label lblSoDen = null!;
@@ -21,6 +21,7 @@ namespace QuanlyDL.Forms
         private Button btnHienTatCa = null!;
         private Button btnSua = null!;
         private Button btnXoa = null!;
+        private CheckBox chkSapXepNgay = null!;
         private DataGridView grid = null!;
         private Label lblGhiChu = null!;
 
@@ -33,7 +34,6 @@ namespace QuanlyDL.Forms
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormTraCuu));
-            lblTieuDe = new Label();
             cboLocDoMat = new ComboBox();
             btnLoc = new Button();
             lblDemMat = new Label();
@@ -50,68 +50,54 @@ namespace QuanlyDL.Forms
             btnHienTatCa = new Button();
             btnSua = new Button();
             btnXoa = new Button();
+            chkSapXepNgay = new CheckBox();
             grid = new DataGridView();
             lblGhiChu = new Label();
             ((System.ComponentModel.ISupportInitialize)grid).BeginInit();
             SuspendLayout();
             // 
-            // lblTieuDe
-            // 
-            lblTieuDe.Location = new Point(611, 72);
-            lblTieuDe.Name = "lblTieuDe";
-            lblTieuDe.Size = new Size(100, 23);
-            lblTieuDe.TabIndex = 0;
-            lblTieuDe.Visible = false;
-            // 
-            // cboLocDoMat
+            // cboLocDoMat (chữ nhạt "Chọn độ mật..." khi chưa chọn gì)
             // 
             cboLocDoMat.DropDownStyle = ComboBoxStyle.DropDownList;
-            cboLocDoMat.Items.AddRange(new object[] { "Tất cả độ mật", "Không", "Mật", "Tuyệt Mật", "Tối Mật" });
+            cboLocDoMat.DrawMode = DrawMode.OwnerDrawFixed;
+            cboLocDoMat.Items.AddRange(new object[] { "Không", "Mật", "Tuyệt Mật", "Tối Mật" });
+            cboLocDoMat.SelectedIndex = -1;
             cboLocDoMat.Location = new Point(23, 20);
             cboLocDoMat.Name = "cboLocDoMat";
-            cboLocDoMat.Size = new Size(160, 28);
+            cboLocDoMat.Size = new Size(180, 28);
             cboLocDoMat.TabIndex = 0;
+            cboLocDoMat.DrawItem += CboLocDoMat_DrawItem;
             // 
             // btnLoc
             // 
-            btnLoc.Location = new Point(191, 17);
+            btnLoc.Location = new Point(211, 17);
             btnLoc.Name = "btnLoc";
-            btnLoc.Size = new Size(130, 34);
-            btnLoc.TabIndex = 20;
+            btnLoc.Size = new Size(120, 34);
+            btnLoc.TabIndex = 1;
             btnLoc.Text = "Lọc theo độ mật";
             btnLoc.Click += BtnLoc_Click;
             // 
-            // lblDemMat
+            // lblDemMat / lblDemToiMat / lblDemTuyetMat (đặt cạnh nhau)
             // 
             lblDemMat.AutoSize = true;
             lblDemMat.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             lblDemMat.ForeColor = Color.DarkOrange;
-            lblDemMat.Location = new Point(330, 25);
+            lblDemMat.Location = new Point(345, 24);
             lblDemMat.Name = "lblDemMat";
-            lblDemMat.Size = new Size(54, 20);
-            lblDemMat.TabIndex = 21;
             lblDemMat.Text = "Mật: 0";
-            // 
-            // lblDemToiMat
             // 
             lblDemToiMat.AutoSize = true;
             lblDemToiMat.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             lblDemToiMat.ForeColor = Color.OrangeRed;
-            lblDemToiMat.Location = new Point(420, 25);
+            lblDemToiMat.Location = new Point(440, 24);
             lblDemToiMat.Name = "lblDemToiMat";
-            lblDemToiMat.Size = new Size(80, 20);
-            lblDemToiMat.TabIndex = 22;
             lblDemToiMat.Text = "Tối Mật: 0";
-            // 
-            // lblDemTuyetMat
             // 
             lblDemTuyetMat.AutoSize = true;
             lblDemTuyetMat.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             lblDemTuyetMat.ForeColor = Color.DarkRed;
-            lblDemTuyetMat.Location = new Point(530, 25);
+            lblDemTuyetMat.Location = new Point(555, 24);
             lblDemTuyetMat.Name = "lblDemTuyetMat";
-            lblDemTuyetMat.Size = new Size(97, 20);
-            lblDemTuyetMat.TabIndex = 23;
             lblDemTuyetMat.Text = "Tuyệt Mật: 0";
             // 
             // lblTongKhoaThuong
@@ -119,25 +105,20 @@ namespace QuanlyDL.Forms
             lblTongKhoaThuong.AutoSize = true;
             lblTongKhoaThuong.Font = new Font("Segoe UI", 9F);
             lblTongKhoaThuong.ForeColor = Color.DimGray;
-            lblTongKhoaThuong.Location = new Point(659, 25);
+            lblTongKhoaThuong.Location = new Point(23, 55);
             lblTongKhoaThuong.Name = "lblTongKhoaThuong";
-            lblTongKhoaThuong.Size = new Size(232, 20);
-            lblTongKhoaThuong.TabIndex = 24;
             lblTongKhoaThuong.Text = "🔒 Đang khóa: 0   |   📄 Thường: 0";
             // 
             // lblTen
             // 
             lblTen.AutoSize = true;
-            lblTen.Location = new Point(23, 73);
+            lblTen.Location = new Point(23, 93);
             lblTen.Name = "lblTen";
-            lblTen.Size = new Size(91, 20);
-            lblTen.TabIndex = 1;
             lblTen.Text = "Tên văn bản:";
             // 
             // txtTimTen
             // 
-            txtTimTen.Location = new Point(120, 69);
-            txtTimTen.Margin = new Padding(3, 4, 3, 4);
+            txtTimTen.Location = new Point(120, 89);
             txtTimTen.Name = "txtTimTen";
             txtTimTen.Size = new Size(228, 27);
             txtTimTen.TabIndex = 2;
@@ -145,87 +126,80 @@ namespace QuanlyDL.Forms
             // lblSoDen
             // 
             lblSoDen.AutoSize = true;
-            lblSoDen.Location = new Point(366, 73);
+            lblSoDen.Location = new Point(366, 93);
             lblSoDen.Name = "lblSoDen";
-            lblSoDen.Size = new Size(58, 20);
-            lblSoDen.TabIndex = 3;
             lblSoDen.Text = "Số đến:";
             // 
             // txtTimSoDen
             // 
-            txtTimSoDen.Location = new Point(434, 69);
-            txtTimSoDen.Margin = new Padding(3, 4, 3, 4);
+            txtTimSoDen.Location = new Point(434, 89);
             txtTimSoDen.Name = "txtTimSoDen";
             txtTimSoDen.Size = new Size(159, 27);
-            txtTimSoDen.TabIndex = 4;
+            txtTimSoDen.TabIndex = 3;
             // 
             // chkLocNgay
             // 
             chkLocNgay.AutoSize = true;
-            chkLocNgay.Location = new Point(23, 117);
-            chkLocNgay.Margin = new Padding(3, 4, 3, 4);
+            chkLocNgay.Location = new Point(23, 137);
             chkLocNgay.Name = "chkLocNgay";
-            chkLocNgay.Size = new Size(166, 24);
-            chkLocNgay.TabIndex = 5;
             chkLocNgay.Text = "Lọc theo Ngày nhận:";
             chkLocNgay.CheckedChanged += ChkLocNgay_CheckedChanged;
             // 
             // dtpTimNgay
             // 
             dtpTimNgay.Enabled = false;
-            dtpTimNgay.Format = DateTimePickerFormat.Short;
-            dtpTimNgay.Location = new Point(183, 113);
-            dtpTimNgay.Margin = new Padding(3, 4, 3, 4);
+            dtpTimNgay.Format = DateTimePickerFormat.Custom;
+            dtpTimNgay.CustomFormat = "dd/MM/yyyy";
+            dtpTimNgay.Location = new Point(183, 133);
             dtpTimNgay.Name = "dtpTimNgay";
             dtpTimNgay.Size = new Size(148, 27);
-            dtpTimNgay.TabIndex = 6;
+            dtpTimNgay.TabIndex = 4;
             // 
             // btnTimKiem
             // 
-            btnTimKiem.Location = new Point(434, 109);
-            btnTimKiem.Margin = new Padding(3, 4, 3, 4);
+            btnTimKiem.Location = new Point(434, 129);
             btnTimKiem.Name = "btnTimKiem";
             btnTimKiem.Size = new Size(126, 40);
-            btnTimKiem.TabIndex = 7;
+            btnTimKiem.TabIndex = 5;
             btnTimKiem.Text = "🔍 Tìm kiếm";
             btnTimKiem.Click += BtnTimKiem_Click;
             // 
             // btnHienTatCa
             // 
-            btnHienTatCa.Location = new Point(571, 109);
-            btnHienTatCa.Margin = new Padding(3, 4, 3, 4);
+            btnHienTatCa.Location = new Point(571, 129);
             btnHienTatCa.Name = "btnHienTatCa";
             btnHienTatCa.Size = new Size(114, 40);
-            btnHienTatCa.TabIndex = 8;
+            btnHienTatCa.TabIndex = 6;
             btnHienTatCa.Text = "Hiện tất cả";
             btnHienTatCa.Click += BtnHienTatCa_Click;
             // 
             // btnSua
             // 
-            btnSua.BackColor = SystemColors.ButtonShadow;
             btnSua.Enabled = false;
-            btnSua.Location = new Point(709, 109);
-            btnSua.Margin = new Padding(3, 4, 3, 4);
+            btnSua.Location = new Point(709, 129);
             btnSua.Name = "btnSua";
             btnSua.Size = new Size(80, 40);
-            btnSua.TabIndex = 9;
+            btnSua.TabIndex = 7;
             btnSua.Text = "Sửa";
-            btnSua.UseVisualStyleBackColor = false;
             btnSua.Click += BtnSua_Click;
             // 
             // btnXoa
             // 
-            btnXoa.BackColor = Color.IndianRed;
             btnXoa.Enabled = false;
-            btnXoa.ForeColor = Color.White;
-            btnXoa.Location = new Point(800, 109);
-            btnXoa.Margin = new Padding(3, 4, 3, 4);
+            btnXoa.Location = new Point(800, 129);
             btnXoa.Name = "btnXoa";
             btnXoa.Size = new Size(91, 40);
-            btnXoa.TabIndex = 10;
+            btnXoa.TabIndex = 8;
             btnXoa.Text = "Xóa";
-            btnXoa.UseVisualStyleBackColor = false;
             btnXoa.Click += BtnXoa_Click;
+            // 
+            // chkSapXepNgay
+            // 
+            chkSapXepNgay.AutoSize = true;
+            chkSapXepNgay.Location = new Point(23, 182);
+            chkSapXepNgay.Name = "chkSapXepNgay";
+            chkSapXepNgay.Text = "Sắp xếp theo Ngày nhận (mới nhất lên đầu)";
+            chkSapXepNgay.CheckedChanged += ChkSapXepNgay_CheckedChanged;
             // 
             // grid
             // 
@@ -233,15 +207,15 @@ namespace QuanlyDL.Forms
             grid.AllowUserToDeleteRows = false;
             grid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             grid.ColumnHeadersHeight = 29;
-            grid.Location = new Point(23, 171);
-            grid.Margin = new Padding(3, 4, 3, 4);
+            grid.RowHeadersVisible = false;
+            grid.Location = new Point(23, 217);
             grid.MultiSelect = false;
             grid.Name = "grid";
             grid.ReadOnly = true;
-            grid.RowHeadersWidth = 51;
             grid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            grid.Size = new Size(869, 507);
-            grid.TabIndex = 11;
+            grid.Size = new Size(869, 460);
+            grid.TabIndex = 9;
+            grid.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             grid.CellDoubleClick += Grid_CellDoubleClick;
             grid.SelectionChanged += Grid_SelectionChanged;
             // 
@@ -251,8 +225,7 @@ namespace QuanlyDL.Forms
             lblGhiChu.ForeColor = Color.DimGray;
             lblGhiChu.Location = new Point(23, 687);
             lblGhiChu.Name = "lblGhiChu";
-            lblGhiChu.Size = new Size(565, 20);
-            lblGhiChu.TabIndex = 12;
+            lblGhiChu.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             lblGhiChu.Text = "Nhấp đúp vào 1 dòng để xem chi tiết. Văn bản có độ mật sẽ yêu cầu nhập mật khẩu.";
             // 
             // FormTraCuu
@@ -260,7 +233,6 @@ namespace QuanlyDL.Forms
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(914, 733);
-            Controls.Add(lblTieuDe);
             Controls.Add(cboLocDoMat);
             Controls.Add(btnLoc);
             Controls.Add(lblDemMat);
@@ -277,11 +249,10 @@ namespace QuanlyDL.Forms
             Controls.Add(btnHienTatCa);
             Controls.Add(btnSua);
             Controls.Add(btnXoa);
+            Controls.Add(chkSapXepNgay);
             Controls.Add(grid);
             Controls.Add(lblGhiChu);
             Icon = (Icon)resources.GetObject("$this.Icon");
-            Margin = new Padding(3, 4, 3, 4);
-            MaximizeBox = false;
             MinimumSize = new Size(930, 770);
             Name = "FormTraCuu";
             StartPosition = FormStartPosition.CenterParent;

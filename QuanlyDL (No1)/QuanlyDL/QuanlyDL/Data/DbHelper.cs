@@ -4,10 +4,6 @@ using QuanlyDL.Models;
 
 namespace QuanlyDL.Data
 {
-    /// <summary>
-    /// Lớp thao tác trực tiếp với cơ sở dữ liệu SQLite (1 tệp .db duy nhất
-    /// nằm trong thư mục Data cạnh file .exe).
-    /// </summary>
     public static class DbHelper
     {
         private static string ChuoiKetNoi => $"Data Source={AppPaths.DuongDanCoSoDuLieu}";
@@ -125,12 +121,8 @@ namespace QuanlyDL.Data
             cmd.ExecuteNonQuery();
         }
 
-        /// <summary>
-        /// Xóa một văn bản theo Id, đồng thời xóa tệp đính kèm trên đĩa nếu có.
-        /// </summary>
         public static void XoaVanBan(long id)
         {
-            // Lấy thông tin trước để biết có tệp đính kèm không
             var vb = LayTheoId(id);
 
             using var conn = new SqliteConnection(ChuoiKetNoi);
@@ -140,7 +132,6 @@ namespace QuanlyDL.Data
             cmd.Parameters.AddWithValue("$id", id);
             cmd.ExecuteNonQuery();
 
-            // Xóa tệp đính kèm trên đĩa (nếu có)
             try
             {
                 if (vb != null && !string.IsNullOrEmpty(vb.TenTepLuu))
@@ -187,13 +178,16 @@ namespace QuanlyDL.Data
             return null;
         }
 
+        /// <summary>
+        /// Lấy tất cả, mặc định theo thứ tự NHẬP TRƯỚC nằm trước (Id tăng dần).
+        /// </summary>
         public static List<VanBan> LayTatCa()
         {
             var ds = new List<VanBan>();
             using var conn = new SqliteConnection(ChuoiKetNoi);
             conn.Open();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT * FROM VanBan ORDER BY NgayNhan DESC, Id DESC";
+            cmd.CommandText = "SELECT * FROM VanBan ORDER BY Id ASC";
             using var reader = cmd.ExecuteReader();
             while (reader.Read()) ds.Add(DocTuReader(reader));
             return ds;
@@ -201,8 +195,11 @@ namespace QuanlyDL.Data
 
         /// <summary>
         /// Tìm kiếm theo Tên văn bản, Số đến, Ngày nhận (mỗi tiêu chí có thể để trống).
+        /// sapXepTheoNgayNhanMoiNhat = false (mặc định): theo thứ tự nhập trước (Id tăng dần).
+        /// sapXepTheoNgayNhanMoiNhat = true: theo Ngày nhận, mới nhất lên đầu.
         /// </summary>
-        public static List<VanBan> TimKiem(string? ten, string? soDen, DateTime? ngayNhan)
+        public static List<VanBan> TimKiem(string? ten, string? soDen, DateTime? ngayNhan,
+            bool sapXepTheoNgayNhanMoiNhat = false)
         {
             var ds = new List<VanBan>();
             using var conn = new SqliteConnection(ChuoiKetNoi);
@@ -226,19 +223,17 @@ namespace QuanlyDL.Data
                 cmd.Parameters.AddWithValue("$ngayNhan", ngayNhan.Value.ToString("yyyy-MM-dd"));
             }
 
+            string orderBy = sapXepTheoNgayNhanMoiNhat ? "NgayNhan DESC, Id DESC" : "Id ASC";
+
             cmd.CommandText = "SELECT * FROM VanBan"
                 + (dieuKien.Count > 0 ? " WHERE " + string.Join(" AND ", dieuKien) : "")
-                + " ORDER BY NgayNhan DESC, Id DESC";
+                + " ORDER BY " + orderBy;
 
             using var reader = cmd.ExecuteReader();
             while (reader.Read()) ds.Add(DocTuReader(reader));
             return ds;
         }
 
-        /// <summary>
-        /// Lấy danh sách văn bản sắp đến hạn hoàn thành (còn từ 0 đến
-        /// soNgayBaoTruoc ngày, kể cả đã quá hạn) và chưa được đánh dấu hoàn thành.
-        /// </summary>
         public static List<VanBan> LayDanhSachSapDenHan(int soNgayBaoTruoc)
         {
             var tatCa = LayTatCa();
@@ -251,7 +246,32 @@ namespace QuanlyDL.Data
                 .ToList();
         }
 
-        // ---------------- Cài đặt riêng: số ngày báo trước hạn (X) ----------------
+        /// <summary>
+        /// Đếm số văn bản theo từng mức Độ mật.
+        /// </summary>
+        public static Dictionary<string, int> DemTheoTungDoMat()
+        {
+            var ketQua = new Dictionary<string, int>
+            {
+                [DoMat.Khong] = 0,
+                [DoMat.Mat] = 0,
+                [DoMat.TuyetMat] = 0,
+                [DoMat.ToiMat] = 0,
+            };
+
+            using var conn = new SqliteConnection(ChuoiKetNoi);
+            conn.Open();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "SELECT MucDoMat, COUNT(*) FROM VanBan GROUP BY MucDoMat";
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                ketQua[reader.GetString(0)] = reader.GetInt32(1);
+            }
+            return ketQua;
+        }
+
+        // ---------------- Cài đặt: số ngày báo trước hạn (X) ----------------
 
         private const string KhoaCaiDatSoNgayBaoTruoc = "SoNgayBaoTruocHan";
         private const int MacDinhSoNgayBaoTruoc = 2;
@@ -266,6 +286,22 @@ namespace QuanlyDL.Data
         public static void LuuSoNgayBaoTruocHan(int soNgay)
         {
             LuuCaiDat(KhoaCaiDatSoNgayBaoTruoc, soNgay.ToString());
+        }
+
+        // ---------------- Cài đặt: hiện thông báo khi lưu văn bản Mật ----------------
+        // Mặc định TẮT (không hiện thông báo) theo yêu cầu người dùng.
+
+        private const string KhoaCaiDatHienThongBaoLuuMat = "HienThongBaoLuuMat";
+
+        public static bool LayHienThongBaoLuuMat()
+        {
+            var giaTri = LayCaiDat(KhoaCaiDatHienThongBaoLuuMat);
+            return giaTri == "1";
+        }
+
+        public static void LuuHienThongBaoLuuMat(bool hien)
+        {
+            LuuCaiDat(KhoaCaiDatHienThongBaoLuuMat, hien ? "1" : "0");
         }
 
         private static VanBan DocTuReader(SqliteDataReader reader)
@@ -293,30 +329,6 @@ namespace QuanlyDL.Data
         {
             int i = reader.GetOrdinal(tenCot);
             return reader.IsDBNull(i) ? null : reader.GetString(i);
-        }
-        /// <summary>
-        /// Đếm số văn bản theo từng mức Độ mật (Không / Mật / Tuyệt Mật / Tối Mật).
-        /// </summary>
-        public static Dictionary<string, int> DemTheoTungDoMat()
-        {
-            var ketQua = new Dictionary<string, int>
-            {
-                [DoMat.Khong] = 0,
-                [DoMat.Mat] = 0,
-                [DoMat.TuyetMat] = 0,
-                [DoMat.ToiMat] = 0,
-            };
-
-            using var conn = new SqliteConnection(ChuoiKetNoi);
-            conn.Open();
-            using var cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT MucDoMat, COUNT(*) FROM VanBan GROUP BY MucDoMat";
-            using var reader = cmd.ExecuteReader();
-            while (reader.Read())
-            {
-                ketQua[reader.GetString(0)] = reader.GetInt32(1);
-            }
-            return ketQua;
         }
     }
 }

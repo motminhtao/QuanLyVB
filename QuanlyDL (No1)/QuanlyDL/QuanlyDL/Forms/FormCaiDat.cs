@@ -14,17 +14,17 @@ namespace QuanlyDL.Forms
         private void FormCaiDat_Load(object? sender, EventArgs e)
         {
             nudSoNgay.Value = DbHelper.LaySoNgayBaoTruocHan();
+            chkHienThongBaoLuuMat.Checked = DbHelper.LayHienThongBaoLuuMat();
             chkKhoiDongCungWindows.Checked = StartupHelper.DangBatCungWindows();
         }
 
         private void BtnLuu_Click(object? sender, EventArgs e)
         {
             DbHelper.LuuSoNgayBaoTruocHan((int)nudSoNgay.Value);
+            DbHelper.LuuHienThongBaoLuuMat(chkHienThongBaoLuuMat.Checked);
             StartupHelper.DatBatCungWindows(chkKhoiDongCungWindows.Checked);
 
-            MessageBox.Show($"Đã lưu: hệ thống sẽ báo trước {(int)nudSoNgay.Value} ngày." +
-                (chkKhoiDongCungWindows.Checked ? "\nỨng dụng sẽ tự khởi động cùng Windows." : ""),
-                "Đã lưu cài đặt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Đã lưu cài đặt.", "Đã lưu", MessageBoxButtons.OK, MessageBoxIcon.Information);
             DialogResult = DialogResult.OK;
             Close();
         }

@@ -42,3 +42,6 @@ C:\Users\Admin\source\repos\QuanlyDL (No1)\QuanlyDL\QuanlyDL\obj\Debug\net8.0-wi
 C:\Users\Admin\source\repos\QuanlyDL (No1)\QuanlyDL\QuanlyDL\obj\Debug\net8.0-windows\ref\QuanlyDL.dll
 C:\Users\Admin\source\repos\QuanlyDL (No1)\QuanlyDL\QuanlyDL\obj\Debug\net8.0-windows\QuanlyDL.Forms.FormTraCuu.resources
 C:\Users\Admin\source\repos\QuanlyDL (No1)\QuanlyDL\QuanlyDL\obj\Debug\net8.0-windows\QuanlyDL.Forms.FormDoiMatKhauVault.resources
+C:\Users\Admin\source\repos\QuanlyDL (No1)\QuanlyDL\QuanlyDL\obj\Debug\net8.0-windows\QuanlyDL.Forms.FormCaiDat.resources
+C:\Users\Admin\source\repos\QuanlyDL (No1)\QuanlyDL\QuanlyDL\obj\Debug\net8.0-windows\QuanlyDL.Forms.FormNhapVanBan.resources
+C:\Users\Admin\source\repos\QuanlyDL (No1)\QuanlyDL\QuanlyDL\obj\Debug\net8.0-windows\QuanlyDL.Properties.Resources.resources

@@ -9,24 +9,77 @@ namespace QuanlyDL.Forms
         public FormTraCuu()
         {
             InitializeComponent();
-            Load += (s, e) => NapDuLieu(DbHelper.LayTatCa());
+            Load += (s, e) => TaiDuLieu();
         }
 
-        private void BtnTimKiem_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Nạp lại dữ liệu theo đúng bộ lọc (tên/số đến/ngày, độ mật) và
+        /// tuỳ chọn sắp xếp hiện tại.
+        /// </summary>
+        private void TaiDuLieu()
         {
             var ketQua = DbHelper.TimKiem(
                 txtTimTen.Text,
                 txtTimSoDen.Text,
-                chkLocNgay.Checked ? dtpTimNgay.Value.Date : null);
+                chkLocNgay.Checked ? dtpTimNgay.Value.Date : (DateTime?)null,
+                chkSapXepNgay.Checked);
+
+            if (cboLocDoMat.SelectedIndex >= 0)
+            {
+                string doMat = cboLocDoMat.SelectedItem!.ToString()!;
+                ketQua = ketQua.Where(v => v.MucDoMat == doMat).ToList();
+            }
+
             NapDuLieu(ketQua);
         }
+
+        private void BtnTimKiem_Click(object sender, EventArgs e) => TaiDuLieu();
+
+        private void BtnLoc_Click(object sender, EventArgs e) => TaiDuLieu();
 
         private void BtnHienTatCa_Click(object sender, EventArgs e)
         {
             txtTimTen.Clear();
             txtTimSoDen.Clear();
             chkLocNgay.Checked = false;
-            NapDuLieu(DbHelper.LayTatCa());
+            cboLocDoMat.SelectedIndex = -1;
+            TaiDuLieu();
+        }
+
+        private void ChkSapXepNgay_CheckedChanged(object sender, EventArgs e) => TaiDuLieu();
+
+        private void ChkLocNgay_CheckedChanged(object sender, EventArgs e)
+        {
+            dtpTimNgay.Enabled = chkLocNgay.Checked;
+        }
+
+        /// <summary>
+        /// Vẽ chữ xám nhạt "Chọn độ mật..." khi ô lọc chưa chọn gì (SelectedIndex = -1).
+        /// </summary>
+        private void CboLocDoMat_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            e.DrawBackground();
+
+            string text;
+            Color mauChu;
+
+            if (e.Index == -1)
+            {
+                text = "Chọn độ mật...";
+                mauChu = SystemColors.GrayText;
+            }
+            else
+            {
+                text = cboLocDoMat.Items[e.Index]?.ToString() ?? "";
+                bool dangChon = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
+                mauChu = dangChon ? SystemColors.HighlightText : SystemColors.ControlText;
+            }
+
+            using var brush = new SolidBrush(mauChu);
+            e.Graphics.DrawString(text, e.Font ?? cboLocDoMat.Font, brush,
+                new PointF(e.Bounds.X + 2, e.Bounds.Y + 2));
+
+            e.DrawFocusRectangle();
         }
 
         private void NapDuLieu(List<VanBan> danhSach)
@@ -46,6 +99,8 @@ namespace QuanlyDL.Forms
 
             if (grid.Columns["Id"] != null)
                 grid.Columns["Id"]!.Visible = false;
+            if (grid.Columns["STT"] != null)
+                grid.Columns["STT"]!.Width = 55;
 
             RenameCotNeuTonTai("STT", "STT");
             RenameCotNeuTonTai("TenVanBan", "Tên văn bản");
@@ -56,31 +111,20 @@ namespace QuanlyDL.Forms
             RenameCotNeuTonTai("TrangThai", "Trạng thái");
             RenameCotNeuTonTai("TepDinhKem", "Tệp đính kèm");
 
-            if (grid.Columns["STT"] != null) grid.Columns["STT"]!.Width = 50;
-
-            CapNhatSoLuongMat();
-
-            // Nếu có ít nhất 1 hàng, chọn hàng đầu tiên để bật nút Sửa/Xóa
             if (grid.Rows.Count > 0)
             {
                 grid.ClearSelection();
                 try
                 {
                     int colIndex = 0;
-                    // tìm cột hiển thị đầu tiên (tránh cột Id ẩn)
                     for (int i = 0; i < grid.Columns.Count; i++)
                     {
-                        if (grid.Columns[i].Visible)
-                        {
-                            colIndex = i;
-                            break;
-                        }
+                        if (grid.Columns[i].Visible) { colIndex = i; break; }
                     }
                     grid.CurrentCell = grid.Rows[0].Cells[colIndex];
                 }
                 catch
                 {
-                    // fallback: chọn hàng
                     grid.Rows[0].Selected = true;
                 }
             }
@@ -89,6 +133,23 @@ namespace QuanlyDL.Forms
                 btnSua.Enabled = false;
                 btnXoa.Enabled = false;
             }
+
+            CapNhatSoLuongMat();
+        }
+
+        private void CapNhatSoLuongMat()
+        {
+            var dem = DbHelper.DemTheoTungDoMat();
+            int soMat = dem[DoMat.Mat];
+            int soToiMat = dem[DoMat.ToiMat];
+            int soTuyetMat = dem[DoMat.TuyetMat];
+            int soKhong = dem[DoMat.Khong];
+            int tongKhoa = soMat + soToiMat + soTuyetMat;
+
+            lblDemMat.Text = $"Mật: {soMat}";
+            lblDemToiMat.Text = $"Tối Mật: {soToiMat}";
+            lblDemTuyetMat.Text = $"Tuyệt Mật: {soTuyetMat}";
+            lblTongKhoaThuong.Text = $"🔒 Đang khóa: {tongKhoa}   |   📄 Thường: {soKhong}";
         }
 
         private void RenameCotNeuTonTai(string ten, string tieuDe)
@@ -106,13 +167,11 @@ namespace QuanlyDL.Forms
             using var form = new FormChiTiet(id);
             form.ShowDialog(this);
 
-            // Tải lại danh sách để cập nhật trạng thái hoàn thành nếu có thay đổi
-            NapDuLieu(DbHelper.LayTatCa());
+            TaiDuLieu();
         }
 
         private void Grid_SelectionChanged(object sender, EventArgs e)
         {
-            // Bật/tắt nút Sửa/Xóa dựa trên việc có hàng được chọn và có Id
             if (grid.SelectedRows.Count == 1)
             {
                 var row = grid.SelectedRows[0];
@@ -136,7 +195,6 @@ namespace QuanlyDL.Forms
             var vb = DbHelper.LayTheoId(id);
             if (vb == null) return;
 
-            // Văn bản có độ mật -> bắt buộc xác thực mật khẩu trước khi cho sửa
             if (vb.CoDoMat)
             {
                 if (!VaultHelper.DamBaoDaMoKhoa(this))
@@ -150,7 +208,7 @@ namespace QuanlyDL.Forms
             using var form = new FormNhapVanBan(id);
             if (form.ShowDialog(this) == DialogResult.OK)
             {
-                NapDuLieu(DbHelper.LayTatCa());
+                TaiDuLieu();
             }
         }
 
@@ -164,7 +222,6 @@ namespace QuanlyDL.Forms
             var vb = DbHelper.LayTheoId(id);
             if (vb == null) return;
 
-            // Văn bản có độ mật -> bắt buộc xác thực mật khẩu trước khi cho xóa
             if (vb.CoDoMat)
             {
                 if (!VaultHelper.DamBaoDaMoKhoa(this))
@@ -184,37 +241,7 @@ namespace QuanlyDL.Forms
 
             DbHelper.XoaVanBan(id);
             MessageBox.Show("Đã xóa văn bản.", "Đã xóa", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            NapDuLieu(DbHelper.LayTatCa());
-        }
-
-        // Handler thay thế cho lambda trong Designer
-        private void ChkLocNgay_CheckedChanged(object sender, EventArgs e)
-        {
-            dtpTimNgay.Enabled = chkLocNgay.Checked;
-        }
-        private void BtnLoc_Click(object sender, EventArgs e)
-        {
-            string? locDoMat = cboLocDoMat.SelectedIndex <= 0 ? null : cboLocDoMat.SelectedItem!.ToString();
-            var ketQua = DbHelper.LayTatCa();
-            if (!string.IsNullOrEmpty(locDoMat))
-                ketQua = ketQua.Where(v => v.MucDoMat == locDoMat).ToList();
-            NapDuLieu(ketQua);
-        }
-
-        private void CapNhatSoLuongMat()
-        {
-            var dem = DbHelper.DemTheoTungDoMat();
-            int soMat = dem[DoMat.Mat];
-            int soToiMat = dem[DoMat.ToiMat];
-            int soTuyetMat = dem[DoMat.TuyetMat];
-            int soKhong = dem[DoMat.Khong];
-            int tongKhoa = soMat + soToiMat + soTuyetMat;
-
-            lblDemMat.Text = $"Mật: {soMat}";
-            lblDemToiMat.Text = $"Tối Mật: {soToiMat}";
-            lblDemTuyetMat.Text = $"Tuyệt Mật: {soTuyetMat}";
-            lblTongKhoaThuong.Text = $"🔒 Đang khóa: {tongKhoa}   |   📄 Thường: {soKhong}";
+            TaiDuLieu();
         }
     }
-
 }

@@ -15,10 +15,6 @@ namespace QuanlyDL.Forms
             NapLaiThongBao();
         }
 
-        /// <summary>
-        /// Nạp lại danh sách văn bản sắp đến hạn / đã quá hạn vào bảng
-        /// thông báo lớn trên giao diện chính.
-        /// </summary>
         private void NapLaiThongBao()
         {
             lvThongBao.Items.Clear();
@@ -74,11 +70,6 @@ namespace QuanlyDL.Forms
             using var form = new FormCaiDat();
             form.ShowDialog(this);
             NapLaiThongBao();
-        }
-
-        private void BtnThoat_Click(object? sender, EventArgs e)
-        {
-            Close();
         }
     }
 }

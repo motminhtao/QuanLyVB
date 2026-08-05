@@ -16,7 +16,6 @@ namespace QuanlyDL.Forms
         private ColumnHeader colTrangThai = null!;
         private Button btnNhapVanBan = null!;
         private Button btnTraCuu = null!;
-        private Button btnThoat = null!;
 
         protected override void Dispose(bool disposing)
         {
@@ -40,7 +39,6 @@ namespace QuanlyDL.Forms
             colTrangThai = new ColumnHeader();
             btnNhapVanBan = new Button();
             btnTraCuu = new Button();
-            btnThoat = new Button();
             pnlTieuDe.SuspendLayout();
             pnlThongBao.SuspendLayout();
             SuspendLayout();
@@ -75,7 +73,7 @@ namespace QuanlyDL.Forms
             lblPhuDe.Name = "lblPhuDe";
             lblPhuDe.Text = "Modun 1: Quản lý, lưu trữ tài liệu, văn bản, hình ảnh có khóa bảo mật";
             // 
-            // btnCaiDat (thu nhỏ, đặt góc trên-phải)
+            // btnCaiDat
             // 
             btnCaiDat.Font = new Font("Segoe UI", 13F);
             btnCaiDat.Location = new Point(640, 15);
@@ -86,6 +84,7 @@ namespace QuanlyDL.Forms
             btnCaiDat.BackColor = Color.FromArgb(0, 90, 158);
             btnCaiDat.ForeColor = Color.White;
             btnCaiDat.TabIndex = 1;
+            btnCaiDat.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnCaiDat.Text = "⚙️";
             btnCaiDat.Click += BtnCaiDat_Click;
             // 
@@ -96,14 +95,16 @@ namespace QuanlyDL.Forms
             pnlThongBao.Location = new Point(20, 115);
             pnlThongBao.Name = "pnlThongBao";
             pnlThongBao.Size = new Size(660, 300);
+            pnlThongBao.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             pnlThongBao.TabIndex = 2;
             // 
             // lblThongBaoTieuDe
             // 
-            lblThongBaoTieuDe.AutoSize = true;
+            lblThongBaoTieuDe.AutoSize = false;
+            lblThongBaoTieuDe.Dock = DockStyle.Top;
+            lblThongBaoTieuDe.Height = 28;
             lblThongBaoTieuDe.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
             lblThongBaoTieuDe.ForeColor = Color.DarkRed;
-            lblThongBaoTieuDe.Location = new Point(0, 0);
             lblThongBaoTieuDe.Name = "lblThongBaoTieuDe";
             lblThongBaoTieuDe.Text = "🔔 Thông báo: Văn bản sắp / đã đến hạn hoàn thành";
             // 
@@ -113,13 +114,12 @@ namespace QuanlyDL.Forms
             lvThongBao.Columns.Add(colSoDen);
             lvThongBao.Columns.Add(colHan);
             lvThongBao.Columns.Add(colTrangThai);
+            lvThongBao.Dock = DockStyle.Fill;
             lvThongBao.FullRowSelect = true;
             lvThongBao.GridLines = true;
             lvThongBao.HideSelection = false;
-            lvThongBao.Location = new Point(0, 28);
             lvThongBao.MultiSelect = false;
             lvThongBao.Name = "lvThongBao";
-            lvThongBao.Size = new Size(660, 272);
             lvThongBao.TabIndex = 0;
             lvThongBao.UseCompatibleStateImageBehavior = false;
             lvThongBao.View = View.Details;
@@ -154,6 +154,7 @@ namespace QuanlyDL.Forms
             btnNhapVanBan.Location = new Point(20, 430);
             btnNhapVanBan.Name = "btnNhapVanBan";
             btnNhapVanBan.Size = new Size(660, 55);
+            btnNhapVanBan.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             btnNhapVanBan.TabIndex = 3;
             btnNhapVanBan.Text = "📝  Nhập văn bản mới";
             btnNhapVanBan.UseVisualStyleBackColor = false;
@@ -169,41 +170,30 @@ namespace QuanlyDL.Forms
             btnTraCuu.Location = new Point(20, 495);
             btnTraCuu.Name = "btnTraCuu";
             btnTraCuu.Size = new Size(660, 55);
+            btnTraCuu.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             btnTraCuu.TabIndex = 4;
             btnTraCuu.Text = "🔍  Tra cứu văn bản";
             btnTraCuu.UseVisualStyleBackColor = false;
             btnTraCuu.Click += BtnTraCuu_Click;
             // 
-            // btnThoat
-            // 
-            btnThoat.Font = new Font("Segoe UI", 10F);
-            btnThoat.Location = new Point(20, 560);
-            btnThoat.Name = "btnThoat";
-            btnThoat.Size = new Size(660, 45);
-            btnThoat.TabIndex = 5;
-            btnThoat.Text = "Thoát";
-            btnThoat.Click += BtnThoat_Click;
-            // 
             // FormMain
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(700, 625);
-            Controls.Add(btnThoat);
+            ClientSize = new Size(700, 565);
+            MinimumSize = new Size(700, 565);
             Controls.Add(btnTraCuu);
             Controls.Add(btnNhapVanBan);
             Controls.Add(pnlThongBao);
             Controls.Add(pnlTieuDe);
-            FormBorderStyle = FormBorderStyle.FixedSingle;
+            FormBorderStyle = FormBorderStyle.Sizable;
             Icon = (Icon)resources.GetObject("$this.Icon");
-            MaximizeBox = false;
             Name = "FormMain";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "QuanlyDL - Quản lý văn bản, tài liệu lưu trữ";
             pnlTieuDe.ResumeLayout(false);
             pnlTieuDe.PerformLayout();
             pnlThongBao.ResumeLayout(false);
-            pnlThongBao.PerformLayout();
             ResumeLayout(false);
         }
     }

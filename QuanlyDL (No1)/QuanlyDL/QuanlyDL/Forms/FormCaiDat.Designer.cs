@@ -7,6 +7,7 @@ namespace QuanlyDL.Forms
         private Label lblGhiChu = null!;
         private Label lblSoNgay = null!;
         private NumericUpDown nudSoNgay = null!;
+        private CheckBox chkHienThongBaoLuuMat = null!;
         private CheckBox chkKhoiDongCungWindows = null!;
         private Button btnDoiMatKhau = null!;
         private Button btnLuu = null!;
@@ -24,6 +25,7 @@ namespace QuanlyDL.Forms
             lblGhiChu = new Label();
             lblSoNgay = new Label();
             nudSoNgay = new NumericUpDown();
+            chkHienThongBaoLuuMat = new CheckBox();
             chkKhoiDongCungWindows = new CheckBox();
             btnDoiMatKhau = new Button();
             btnLuu = new Button();
@@ -34,7 +36,7 @@ namespace QuanlyDL.Forms
             lblTieuDe.AutoSize = true;
             lblTieuDe.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
             lblTieuDe.Location = new Point(20, 15);
-            lblTieuDe.Text = "Cài đặt thông báo hạn xử lý văn bản";
+            lblTieuDe.Text = "Cài đặt";
 
             lblGhiChu.AutoSize = false;
             lblGhiChu.Location = new Point(20, 48);
@@ -53,18 +55,22 @@ namespace QuanlyDL.Forms
             nudSoNgay.Maximum = 90;
             nudSoNgay.Value = 2;
 
+            chkHienThongBaoLuuMat.AutoSize = true;
+            chkHienThongBaoLuuMat.Location = new Point(20, 140);
+            chkHienThongBaoLuuMat.Text = "Hiển thị thông báo khi lưu văn bản Mật";
+
             chkKhoiDongCungWindows.AutoSize = true;
-            chkKhoiDongCungWindows.Location = new Point(20, 140);
+            chkKhoiDongCungWindows.Location = new Point(20, 170);
             chkKhoiDongCungWindows.Text = "Khởi động cùng Windows";
 
             btnDoiMatKhau.Text = "Đổi mật khẩu vùng có khóa...";
-            btnDoiMatKhau.Location = new Point(20, 175);
+            btnDoiMatKhau.Location = new Point(20, 205);
             btnDoiMatKhau.Size = new Size(230, 32);
             btnDoiMatKhau.Click += BtnDoiMatKhau_Click;
 
             btnLuu.Text = "Lưu";
             btnLuu.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
-            btnLuu.Location = new Point(180, 225);
+            btnLuu.Location = new Point(180, 255);
             btnLuu.Size = new Size(90, 34);
             btnLuu.BackColor = Color.FromArgb(0, 120, 215);
             btnLuu.ForeColor = Color.White;
@@ -72,17 +78,18 @@ namespace QuanlyDL.Forms
             btnLuu.Click += BtnLuu_Click;
 
             btnHuy.Text = "Hủy";
-            btnHuy.Location = new Point(280, 225);
+            btnHuy.Location = new Point(280, 255);
             btnHuy.Size = new Size(90, 34);
             btnHuy.DialogResult = DialogResult.Cancel;
 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(400, 280);
+            ClientSize = new Size(400, 310);
             Controls.Add(lblTieuDe);
             Controls.Add(lblGhiChu);
             Controls.Add(lblSoNgay);
             Controls.Add(nudSoNgay);
+            Controls.Add(chkHienThongBaoLuuMat);
             Controls.Add(chkKhoiDongCungWindows);
             Controls.Add(btnDoiMatKhau);
             Controls.Add(btnLuu);

@@ -216,15 +216,17 @@ namespace QuanlyDL.Forms
             {
                 vb.Id = _editingId.Value;
                 DbHelper.CapNhatVanBan(vb);
-                MessageBox.Show("Đã cập nhật văn bản.", "Lưu thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
                 DbHelper.ThemVanBan(vb);
-                MessageBox.Show(
-                    coDoMat
-                        ? "Đã lưu văn bản vào Vùng lưu trữ CÓ KHÓA (đã mã hóa)."
-                        : "Đã lưu văn bản vào Vùng lưu trữ không khóa.",
+            }
+
+            // Chỉ hiện thông báo khi lưu văn bản CÓ ĐỘ MẬT, và chỉ khi người dùng
+            // đã bật tuỳ chọn "Hiển thị thông báo khi lưu văn bản Mật" trong Cài đặt.
+            if (coDoMat && DbHelper.LayHienThongBaoLuuMat())
+            {
+                MessageBox.Show("Đã lưu văn bản vào Vùng lưu trữ CÓ KHÓA (đã mã hóa).",
                     "Lưu thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
 
